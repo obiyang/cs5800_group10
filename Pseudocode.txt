@@ -1,0 +1,59 @@
+BEGIN
+    // Load dictionary words and their frequency ranks from an Excel file
+    LOAD Excel file "500_common_words.xlsx"
+    FOR each row in the Excel file DO:
+        EXTRACT word and its frequency rank
+        INSERT the word into the Trie with its frequency
+
+    // Prompt the user for input
+    DISPLAY welcome message
+    PROMPT user for a word input
+
+    // AUTOCOMPLETE
+    FUNCTION AUTOCOMPLETE(prefix):
+        SET node = root of Trie
+        FOR each character in prefix DO:
+            IF character not in node.children THEN:
+                RETURN an empty list
+            ELSE:
+                MOVE node to the child corresponding to the character
+        INITIALIZE an empty list for results
+        CALL DFS starting from current node to collect words with the prefix
+        SORT the collected words based on frequency in descending order
+        RETURN list of words
+
+    CALL AUTOCOMPLETE(user_input)
+    IF autocomplete list is empty THEN:
+        PRINT "No autocomplete suggestions found"
+    ELSE:
+        PRINT autocomplete suggestions
+
+    // SPELL CORRECTION
+    FUNCTION EDIT_DISTANCE(word1, word2):
+        INITIALIZE a 2D DP array for word1 and word2 lengths
+        FOR each index i in word1 DO:
+            FOR each index j in word2 DO:
+                IF i or j is zero THEN:
+                    SET DP value based on insertion or deletion cost
+                ELSE IF characters at i and j are the same THEN:
+                    DP value = DP value at (i-1, j-1)
+                ELSE:
+                    DP value = 1 + MINIMUM of (deletion, insertion, replacement)
+        RETURN DP value at (length of word1, length of word2)
+
+    FUNCTION SPELL_CORRECTION(input_word, dictionary):
+        FOR each dictionary_word in dictionary DO:
+            COMPUTE edit distance between input_word and dictionary_word
+            STORE dictionary_word with its edit distance
+        SORT all dictionary words by edit distance (lowest first)
+        FIND the minimum edit distance value
+        RETURN all words whose edit distance equals the minimum value
+
+    CALL SPELL_CORRECTION(user_input, list of dictionary words)
+    IF spelling correction list is empty THEN:
+        PRINT "No spelling correction found"
+    ELSE:
+        PRINT spelling correction suggestions
+
+    PRINT thank you message
+END
